@@ -1,0 +1,148 @@
+graph TB
+
+%% Invisible top node to push SERVER higher
+top --> MB
+top --> CSB
+
+%% SERVER
+subgraph SERVER
+SS[ChatServerAppl ServerSocket:9000]
+MB[MessageBox BlockingQueue]
+CSB[ChatServerSender Broadcaster]
+
+SS -->|accept| CSR1[ChatServerReceiver Thread 1]
+SS -->|accept| CSR2[ChatServerReceiver Thread 2]
+SS -->|accept| CSR3[ChatServerReceiver Thread 3]
+SS -->|accept| CSR4[ChatServerReceiver Thread 4]
+SS -->|accept| CSR5[ChatServerReceiver Thread 5]
+SS -->|accept| CSR6[ChatServerReceiver Thread 6]
+
+CSR1 -->|put message| MB
+CSR2 -->|put message| MB
+CSR3 -->|put message| MB
+CSR4 -->|put message| MB
+CSR5 -->|put message| MB
+CSR6 -->|put message| MB
+
+MB -->|take message| CSB
+CSB -->|broadcast| PW1[PrintWriter 1]
+CSB -->|broadcast| PW2[PrintWriter 2]
+CSB -->|broadcast| PW3[PrintWriter 3]
+CSB -->|broadcast| PW4[PrintWriter 4]
+CSB -->|broadcast| PW5[PrintWriter 5]
+CSB -->|broadcast| PW6[PrintWriter 6]
+end
+
+%% CLIENT 1–6 (без изменений)
+
+subgraph CLIENT1
+C1A[ClientSocketAppl]
+C1S[MessageSender Thread]
+C1R[MessageReceiver Daemon]
+CONS1[Console 1]
+SOCK1[Socket 1]
+C1A --> C1S
+C1A --> C1R
+C1S -->|send| SOCK1
+SOCK1 -->|receive| C1R
+C1R -->|print| CONS1
+CONS1 -->|input| C1S
+end
+
+subgraph CLIENT2
+C2A[ClientSocketAppl]
+C2S[MessageSender Thread]
+C2R[MessageReceiver Daemon]
+CONS2[Console 2]
+SOCK2[Socket 2]
+C2A --> C2S
+C2A --> C2R
+C2S -->|send| SOCK2
+SOCK2 -->|receive| C2R
+C2R -->|print| CONS2
+CONS2 -->|input| C2S
+end
+
+subgraph CLIENT3
+C3A[ClientSocketAppl]
+C3S[MessageSender Thread]
+C3R[MessageReceiver Daemon]
+CONS3[Console 3]
+SOCK3[Socket 3]
+C3A --> C3S
+C3A --> C3R
+C3S -->|send| SOCK3
+SOCK3 -->|receive| C3R
+C3R -->|print| CONS3
+CONS3 -->|input| C3S
+end
+
+subgraph CLIENT4
+C4A[ClientSocketAppl]
+C4S[MessageSender Thread]
+C4R[MessageReceiver Daemon]
+CONS4[Console 4]
+SOCK4[Socket 4]
+C4A --> C4S
+C4A --> C4R
+C4S -->|send| SOCK4
+SOCK4 -->|receive| C4R
+C4R -->|print| CONS4
+CONS4 -->|input| C4S
+end
+
+subgraph CLIENT5
+C5A[ClientSocketAppl]
+C5S[MessageSender Thread]
+C5R[MessageReceiver Daemon]
+CONS5[Console 5]
+SOCK5[Socket 5]
+C5A --> C5S
+C5A --> C5R
+C5S -->|send| SOCK5
+SOCK5 -->|receive| C5R
+C5R -->|print| CONS5
+CONS5 -->|input| C5S
+end
+
+subgraph CLIENT6
+C6A[ClientSocketAppl]
+C6S[MessageSender Thread]
+C6R[MessageReceiver Daemon]
+CONS6[Console 6]
+SOCK6[Socket 6]
+C6A --> C6S
+C6A --> C6R
+C6S -->|send| SOCK6
+SOCK6 -->|receive| C6R
+C6R -->|print| CONS6
+CONS6 -->|input| C6S
+end
+
+%% TCP and broadcast
+CSR1 -.->|TCP| SOCK1
+CSR2 -.->|TCP| SOCK2
+CSR3 -.->|TCP| SOCK3
+CSR4 -.->|TCP| SOCK4
+CSR5 -.->|TCP| SOCK5
+CSR6 -.->|TCP| SOCK6
+
+PW1 -.->|TCP| SOCK1
+PW2 -.->|TCP| SOCK2
+PW3 -.->|TCP| SOCK3
+PW4 -.->|TCP| SOCK4
+PW5 -.->|TCP| SOCK5
+PW6 -.->|TCP| SOCK6
+
+%% Styles
+classDef server fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:#000000
+classDef client fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,color:#000000
+classDef thread fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000000
+classDef daemon fill:#ffebee,stroke:#b71c1c,stroke-width:2px,color:#000000
+classDef invis fill:none,stroke:none,color:#ffffff
+
+class top invis
+class SS,MB,CSB server
+class CSR1,CSR2,CSR3,CSR4,CSR5,CSR6,C1S,C2S,C3S,C4S,C5S,C6S thread
+class C1R,C2R,C3R,C4R,C5R,C6R daemon
+class C1A,C2A,C3A,C4A,C5A,C6A,CONS1,CONS2,CONS3,CONS4,CONS5,CONS6 client
