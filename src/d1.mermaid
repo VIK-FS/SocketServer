@@ -1,0 +1,67 @@
+graph TB
+%% Server Side
+subgraph "SERVER SIDE"
+CSA[ChatServerAppl<br/>Main Application]
+SS[ServerSocket<br/>Port: 9000]
+CSS[ChatServerSender<br/>Runnable]
+CSR[ChatServerReceiver<br/>Runnable]
+MQ[BlockingQueue&lt;String&gt;<br/>MessageBox]
+ES[ExecutorService<br/>CachedThreadPool]
+PWSet[Set&lt;PrintWriter&gt;<br/>Connected Clients]
+end
+
+%% Client Side
+subgraph "CLIENT SIDE"
+CSO[ClientSocketAppl<br/>Main Application]
+CS[Socket Connection]
+MR[MessageReceiver<br/>Runnable]
+MS[MessageSender<br/>Runnable]
+UI[Console I/O<br/>Scanner/System.out]
+end
+
+%% Server Internal Flow
+CSA --> SS
+CSA --> CSS
+CSA --> ES
+CSA --> MQ
+SS -->|accept| CSR
+CSR -->|put| MQ
+CSS -->|take| MQ
+CSS --> PWSet
+ES -->|execute| CSR
+CSS -->|forEach println| PWSet
+
+%% Client Internal Flow
+CSO --> CS
+CSO --> MR
+CSO --> MS
+MR --> UI
+MS --> UI
+
+%% Network Communication
+CS -.->|TCP Socket| SS
+MS -.->|Send Message| CSR
+CSS -.->|Broadcast| MR
+
+%% Threading
+CSA -->|Daemon Thread| CSS
+CSO -->|Daemon Thread| MR
+CSO -->|New Thread| MS
+
+%% Data Flow
+UI -->|User Input| MS
+MS -->|Formatted Message| CSR
+CSR -->|Queue Message| MQ
+CSS -->|Broadcast to All| PWSet
+PWSet -->|Send to Client| MR
+MR -->|Display| UI
+
+%% Styling
+classDef serverClass fill:#e1f5fe,stroke:#0277bd,stroke-width:2px
+classDef clientClass fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+classDef dataClass fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+classDef threadClass fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
+
+class CSA,SS,CSS,CSR,ES serverClass
+class CSO,CS,MR,MS,UI clientClass
+class MQ,PWSet dataClass

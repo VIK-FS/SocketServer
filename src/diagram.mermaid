@@ -1,0 +1,91 @@
+%%{init: {'flowchart': {'rankSpacing': 60, 'nodeSpacing': 40, 'ranker': 'tight-tree'}}}%%
+graph TB
+%% Top Level - Server
+    subgraph SERVER
+        SS["ChatServerAppl ServerSocket:9000"]
+        MB["MessageBox BlockingQueue"]
+        CSB["ChatServerSender Broadcaster"]
+
+        SS -->|accept| CSR1["ChatServerReceiver Thread 1"]
+        SS -->|accept| CSR2["ChatServerReceiver Thread 2"]
+        SS -->|accept| CSR3["ChatServerReceiver Thread 3"]
+
+        CSR1 -->|put message| MB
+        CSR2 -->|put message| MB
+        CSR3 -->|put message| MB
+
+        MB -->|take message| CSB
+        CSB -->|broadcast| PW1["PrintWriter 1"]
+        CSB -->|broadcast| PW2["PrintWriter 2"]
+        CSB -->|broadcast| PW3["PrintWriter 3"]
+    end
+
+%% Bottom Level - Clients
+    subgraph CLIENTS
+        subgraph CLIENT1
+            C1A["ClientSocketAppl"]
+            C1S["MessageSender Thread"]
+            C1R["MessageReceiver Daemon"]
+            SOCK1["Socket 1"]
+            CONS1["Console 1"]
+            C1A --> C1S
+            C1A --> C1R
+            C1S -->|send| SOCK1
+            SOCK1 -->|receive| C1R
+            C1R -->|print| CONS1
+            CONS1 -->|input| C1S
+        end
+        subgraph CLIENT2
+            C2A["ClientSocketAppl"]
+            C2S["MessageSender Thread"]
+            C2R["MessageReceiver Daemon"]
+            SOCK2["Socket 2"]
+            CONS2["Console 2"]
+            C2A --> C2S
+            C2A --> C2R
+            C2S -->|send| SOCK2
+            SOCK2 -->|receive| C2R
+            C2R -->|print| CONS2
+            CONS2 -->|input| C2S
+        end
+        subgraph CLIENT3
+            C3A["ClientSocketAppl"]
+            C3S["MessageSender Thread"]
+            C3R["MessageReceiver Daemon"]
+            SOCK3["Socket 3"]
+            CONS3["Console 3"]
+            C3A --> C3S
+            C3A --> C3R
+            C3S -->|send| SOCK3
+            SOCK3 -->|receive| C3R
+            C3R -->|print| CONS3
+            CONS3 -->|input| C3S
+        end
+    end
+
+%% Clients initiate connection to Server
+    C1A -->|connect| SS
+    C2A -->|connect| SS
+    C3A -->|connect| SS
+
+%% Server accepts client connections
+    SS -.->|accept| SOCK1
+    SS -.->|accept| SOCK2
+    SS -.->|accept| SOCK3
+
+%% Broadcast from Server to Clients
+    PW1 -.->|broadcast| C1R
+    PW2 -.->|broadcast| C2R
+    PW3 -.->|broadcast| C3R
+
+%% Enhanced styling with contrast text
+    classDef server fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:#000000
+    classDef client fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,color:#000000
+    classDef thread fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000000
+    classDef daemon fill:#ffebee,stroke:#b71c1c,stroke-width:2px,color:#000000
+
+%% Apply styles to components
+    class SS,MB,CSB server
+    class CSR1,CSR2,CSR3,C1S,C2S,C3S thread
+    class C1R,C2R,C3R daemon
+    class C1A,C2A,C3A,CONS1,CONS2,CONS3 client
